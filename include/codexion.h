@@ -3,27 +3,27 @@
 #ifndef CODEXION_H
 # define CODEXION_H
 
-# include <stdio.h>
 # include <stdlib.h>
+# include <stdio.h>
 # include <pthread.h>
 # include <sys/time.h>
+# include <unistd.h>
+# include <string.h>
 
-struct s_program;
+typedef struct s_program t_program;
+typedef struct s_coder t_coder;
 
 typedef struct s_dongle
 {
     pthread_mutex_t mutex;
-    pthread_cond_t cond;
-    int            is_available;
-    long long      available_at;
-    int            req_coder_id[2];
-    long long      req_time[2];
-    long long      req_deadline[2];
 } t_dongle;
 
 typedef struct s_program
 {
+    pthread_mutex_t write_mutex;
+    pthread_mutex_t status_mutex;
     t_coder *coders;
+    t_dongle *dongles;
     int     total_coders;
     long long     time_to_burnout;
     long long     time_to_compile;
@@ -31,8 +31,10 @@ typedef struct s_program
     long long     time_to_refactor;
     int     num_compiles;
     int     cooldown;
-    int     scheduler; 
-}   t_program;
+    int     scheduler;
+    int    simulation_end; 
+    long long     start_time;
+} t_program;
 
 typedef struct s_coder
 {
@@ -42,8 +44,18 @@ typedef struct s_coder
     long long      last_compile_start;
     t_dongle       *left_dongle;
     t_dongle       *right_dongle;
-
-    struct s_codexion *global;
+    t_program *global;
 } t_coder;
+
+
+int			ft_parsing(int argc, char **argv, t_program *program);
+int			ft_mem_alloc(t_program *pgm);
+void		ft_init(t_program *pgm);
+int			ft_start_simulation(t_program *pgm);
+void		ft_clean_all(t_program *pgm);
+void		*ft_coder_routine(void *arg);
+size_t		ft_get_time(void);
+void		ft_usleep(size_t milliseconds);
+void        ft_print(t_coder *coder, char *msg)
 
 #endif

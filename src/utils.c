@@ -1,8 +1,15 @@
-
-
-
-
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils_a.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dcuenca <dcuenca@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/06/23 12:03:52 by dcuenca           #+#    #+#             */
+/*   Updated: 2026/06/23 12:03:52 by dcuenca          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+#include "../include/codexion.h"
 int ft_mem_alloc(t_program *pgm)
 {
 	pgm->coders = malloc(sizeof(t_coder) * pgm->total_coders);
@@ -22,39 +29,42 @@ int ft_mem_alloc(t_program *pgm)
 }
 
 
-int ft_strcmp(const char *s1, const char *s2)
+size_t ft_get_time(void)
 {
-    while (*s1 && *s2 && *s1 == *s2)
-    {
-        s1++;
-        s2++;
-    }
-    return ((unsigned char)*s1 - (unsigned char)*s2);
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000 + (tv.tv_usec / 1000));
 }
 
-int	ft_atoi(const char *str)
+void ft_usleep(size_t milliseconds)
 {
-	int	result;
-	int	i;
-	int	sign;
+	size_t start_time = ft_get_time();
+	while (ft_get_time() - start_time < milliseconds)
+		usleep(100);
+}
 
-	i = 0;
-	result = 0;
-	sign = 1;
-	while (str[i] == '\r' || str[i] == '\t' || str[i] == '\n' || str[i] == '\f'
-		|| str [i] == ' ' || str[i] == '\v')
-		i++;
-	if (str[i] == '-')
-	{
-		sign = -1;
-		i++;
-	}
-	else if (str[i] == '+')
-		i++;
-	while (str[i] >= '0' && str[i] <= '9')
-	{
-		result = result * 10 + (str[i] - '0');
-		i++;
-	}
-	return (sign * result);
+void ft_clean_all(t_program *pgm)
+{
+    int i;
+    i = 0;
+    while (i < pgm->total_coders)
+    {
+        pthread_mutex_destroy(&pgm->dongles[i].mutex);
+        i++;
+    }
+    pthread_mutex_destroy(&pgm->write_mutex);
+	pthread_mutex_destroy(&pgm->status_mutex);
+
+    if (pgm->coders)
+        free(pgm->coders);
+    if (pgm->dongles)
+        free(pgm->dongles);
+}
+
+void ft_print(t_coder *coder, char *msg)
+{
+    pthread_mutex_lock(&coder->global->write_mutex);
+    printf("%zu Coder %d %s dongle.\n",
+                ft_get_time() - coder->global->start_time, coder->id, msg);
+    pthread_mutex_unlock(&coder->global->write_mutex);
 }

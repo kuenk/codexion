@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dcuenca <dcuenca@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/06/19 14:44:31 by dcuenca           #+#    #+#             */
+/*   Updated: 2026/06/19 14:44:31 by dcuenca          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../include/codexion.h"
 
 int ft_init_dongles(t_program *pgm)
 {
@@ -9,13 +22,6 @@ int ft_init_dongles(t_program *pgm)
             printf("Error: Failed to initialize mutex for dongle %d.\n", i);
             return 1;
         }
-        if (pthread_cond_init(&pgm->dongles[i].cond, NULL) != 0)
-        {
-            printf("Error: Failed to initialize condition variable for dongle %d.\n", i);
-            return 1;
-        }
-        pgm->dongles[i].is_available = 1;
-        pgm->dongles[i].available_at = 0;
         i++;
     }
     return 0; // Placeholder implementation
@@ -40,6 +46,8 @@ int ft_init_coders(t_program *pgm)
 
 void ft_init(t_program *pgm)
 {
+    pthread_mutex_init(&pgm->write_mutex, NULL);
+    pthread_mutex_init(&pgm->status_mutex, NULL);
     ft_init_dongles(pgm);
     ft_init_coders(pgm);
 }
