@@ -19,8 +19,9 @@ static int ft_check_death(t_program *pgm, int i)
     {
         pthread_mutex_lock(&pgm->write_mutex);
         pgm->simulation_end = 1;
-        printf("%zu Coder %d has burned out.\n",
-            ft_get_time() - pgm->start_time, pgm->coders[i].id);
+        printf("%llu %d has burned out.\n",
+            (unsigned long long)(ft_get_time() - pgm->start_time),
+            pgm->coders[i].id);
         pthread_mutex_unlock(&pgm->write_mutex);
         pthread_mutex_unlock(&pgm->status_mutex);
         return (1);

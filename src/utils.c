@@ -64,7 +64,8 @@ void ft_clean_all(t_program *pgm)
 void ft_print(t_coder *coder, char *msg)
 {
     pthread_mutex_lock(&coder->global->write_mutex);
-    printf("%zu Coder %d %s dongle.\n",
-                ft_get_time() - coder->global->start_time, coder->id, msg);
+    printf("%llu %d %s dongle.\n",
+				(unsigned long long)(ft_get_time() - coder->global->start_time),
+				coder->id, msg);
     pthread_mutex_unlock(&coder->global->write_mutex);
 }

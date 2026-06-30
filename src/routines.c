@@ -65,8 +65,17 @@ void ft_refactor(t_coder *coder)
 
 void *ft_coder_routine(void *arg)
 {
-    t_coder *coder = (t_coder *)arg;
-    t_program *pgm = coder->global;
+    t_coder *coder; 
+    coder = (t_coder *)arg;
+    t_program *pgm;
+    pgm = coder->global;
+    if (pgm->total_coders == 1)
+    {
+        pthread_mutex_lock(&coder->left_dongle->mutex);
+        ft_usleep(pgm->time_to_burnout);
+        pthread_mutex_unlock(&coder->left_dongle->mutex);
+        return (NULL);
+    }
     if (coder->id % 2 == 0)
         ft_usleep(2);
     while (!ft_check_end(pgm) 

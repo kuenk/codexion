@@ -12,6 +12,7 @@
 
 typedef struct s_program t_program;
 typedef struct s_coder t_coder;
+typedef struct s_dongle t_dongle;
 
 typedef struct s_dongle
 {
@@ -56,6 +57,6 @@ void		ft_clean_all(t_program *pgm);
 void		*ft_coder_routine(void *arg);
 size_t		ft_get_time(void);
 void		ft_usleep(size_t milliseconds);
-void        ft_print(t_coder *coder, char *msg)
+void        ft_print(t_coder *coder, char *msg);
 
 #endif

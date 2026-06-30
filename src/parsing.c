@@ -23,33 +23,27 @@ static int ft_check_argc(int argc)
     return (0);
 }
 
-static int ft_check_numbers(char *str, int idx)
+static int ft_is_numeric(char *str)
 {
     int i;
-
-    if (*str == '\0')
-    {
-        printf("Error: Argument %d is empty\n", idx);
-        return (1);
-    }
-
     i = 0;
     while (str[i])
     {
-        if (str[i] < '0' || str[i] > '9')
-        {
-            printf("Error: ('%s') has invalid character '%c'. \n", str, str[i]);
-            return (1);
-        }
+        if (str[i] < '0' || str[i] > 9)
+            return (0);
         i++;
     }
-    return (0);
+    return (1);
 }
-
 
 static int ft_validate_and_save(t_program *pgm, char **argv)
 {
     pgm->total_coders = atoi(argv[1]);
+    if (pgm->total_coders <= 2 || pgm->total_coders >= 200)
+    {
+        printf("Need between 2 and 200 coders.\n");
+        return (1);
+    }
     pgm->time_to_burnout = atoi(argv[2]);
     pgm->time_to_compile = atoi(argv[3]);
     pgm->time_to_debug = atoi(argv[4]);
@@ -85,8 +79,13 @@ int ft_parsing(int argc, char **argv, t_program *program)
     {
         if (i < 8)
         {
-            if  (ft_check_numbers(argv[i], i))
+            if (!ft_is_numeric(argv[i]))
+            {
+                printf("Error: Argument %d ('%s') is not a valid number.\n",
+                i, argv[i]);
                 return (1);
+            }
+            i++;
         }
         else
         {
