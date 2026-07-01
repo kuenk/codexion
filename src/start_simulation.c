@@ -30,6 +30,22 @@ static int ft_check_death(t_program *pgm, int i)
     return (0);
 }
 
+static int ft_all_coders_finished(t_program *pgm)
+{
+    int i;
+
+    if (pgm->num_compiles == -1)
+        return (0);
+    i = 0;
+    while (i < pgm->total_coders)
+    {
+        if (pgm->coders[i].compile_count < pgm->num_compiles)
+            return (0);
+        i++;
+    }
+    return (1);
+}
+
 void *ft_supervisor(void *arg)
 {
     t_program *pgm;
@@ -51,8 +67,15 @@ void *ft_supervisor(void *arg)
                 return (NULL);            
             i++;
         }
-    }
+        if (ft_all_coders_finished(pgm))
+        {
+            pthread_mutex_lock(&pgm->status_mutex);
+            pgm->simulation_end = 1;
+            pthread_mutex_unlock(&pgm->status_mutex);
+            break;
+        }
         ft_usleep(1);
+    }
     return (NULL);
 }
 
@@ -64,6 +87,7 @@ int ft_start_simulation(t_program *pgm)
     pgm->start_time = ft_get_time();
     while (i < pgm->total_coders)
     {
+        pgm->coders[i].last_compile_start = pgm->start_time;
         pthread_create(&pgm->coders[i].thread_id, NULL,
             ft_coder_routine, &pgm->coders[i]);
         i++;

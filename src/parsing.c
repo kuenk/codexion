@@ -29,7 +29,7 @@ static int ft_is_numeric(char *str)
     i = 0;
     while (str[i])
     {
-        if (str[i] < '0' || str[i] > 9)
+        if (str[i] < '0' || str[i] > '9')
             return (0);
         i++;
     }
@@ -39,7 +39,7 @@ static int ft_is_numeric(char *str)
 static int ft_validate_and_save(t_program *pgm, char **argv)
 {
     pgm->total_coders = atoi(argv[1]);
-    if (pgm->total_coders <= 2 || pgm->total_coders >= 200)
+    if (pgm->total_coders < 2 || pgm->total_coders >= 200)
     {
         printf("Need between 2 and 200 coders.\n");
         return (1);

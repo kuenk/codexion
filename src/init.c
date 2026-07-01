@@ -48,6 +48,7 @@ void ft_init(t_program *pgm)
 {
     pthread_mutex_init(&pgm->write_mutex, NULL);
     pthread_mutex_init(&pgm->status_mutex, NULL);
+    pgm->simulation_end = 0;
     ft_init_dongles(pgm);
     ft_init_coders(pgm);
 }
