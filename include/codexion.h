@@ -55,6 +55,7 @@ void		ft_init(t_program *pgm);
 int			ft_start_simulation(t_program *pgm);
 void		ft_clean_all(t_program *pgm);
 void		*ft_coder_routine(void *arg);
+int		ft_compile(t_coder *coder);
 size_t		ft_get_time(void);
 void		ft_usleep(size_t milliseconds);
 void        ft_print(t_coder *coder, char *msg);

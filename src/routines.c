@@ -23,11 +23,13 @@ static int ft_check_end(t_program *pgm)
     return (end);
 }
 
-void ft_compile(t_coder *coder)
+int ft_compile(t_coder *coder)
 {
     pthread_mutex_t *first;
     pthread_mutex_t *second;
 
+    if (ft_check_end(coder->global))
+        return (0);
     first = &coder->left_dongle->mutex;
     second = &coder->right_dongle->mutex;
 
@@ -43,22 +45,40 @@ void ft_compile(t_coder *coder)
     ft_print(coder, "has taken the other dongle");
     pthread_mutex_lock(&coder->global->status_mutex);
     coder->last_compile_start = ft_get_time();
+    if (coder->global->simulation_end)
+    {
+        pthread_mutex_unlock(&coder->global->status_mutex);
+        pthread_mutex_unlock(first);
+        pthread_mutex_unlock(second);
+        return (0);
+    }
     pthread_mutex_unlock(&coder->global->status_mutex);
     ft_print(coder, "is compiling");
     ft_usleep(coder->global->time_to_compile);
+    if (ft_check_end(coder->global))
+    {
+        pthread_mutex_unlock(first);
+        pthread_mutex_unlock(second);
+        return (0);
+    }
     coder->compile_count++;
     pthread_mutex_unlock(first);
     pthread_mutex_unlock(second);
+    return (1);
 }   
 
 void ft_debug(t_coder *coder)
 {
+    if (ft_check_end(coder->global))
+        return;
     ft_print(coder, "is debugging");
     ft_usleep(coder->global->time_to_debug);
 }
 
 void ft_refactor(t_coder *coder)
 {   
+    if (ft_check_end(coder->global))
+        return;
     ft_print(coder, "is refactoring");
     ft_usleep(coder->global->time_to_refactor);
 }
@@ -82,7 +102,8 @@ void *ft_coder_routine(void *arg)
             && (pgm->num_compiles == -1
             || coder->compile_count < pgm->num_compiles))
     {
-        ft_compile(coder);
+        if (!ft_compile(coder))
+            break;
         ft_debug(coder);
         ft_refactor(coder);
     }
