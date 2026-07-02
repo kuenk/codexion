@@ -41,7 +41,8 @@ int	ft_init_coders(t_program *pgm)
 		pgm->coders[i].last_compile_start = 0;
 		pgm->coders[i].global = pgm;
 		pgm->coders[i].left_dongle = &pgm->dongles[i];
-		pgm->coders[i].right_dongle = &pgm->dongles[(i + 1) % pgm->total_coders];
+		pgm->coders[i].right_dongle = &pgm->dongles[(i + 1)
+			% pgm->total_coders];
 		i++;
 	}
 	return (0);

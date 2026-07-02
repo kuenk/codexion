@@ -57,24 +57,19 @@ void	*ft_supervisor(void *arg)
 	{
 		pthread_mutex_lock(&pgm->status_mutex);
 		if (pgm->simulation_end)
-		{
-			pthread_mutex_unlock(&pgm->status_mutex);
-			break ;
-		}
+			return (pthread_mutex_unlock(&pgm->status_mutex), NULL);
 		pthread_mutex_unlock(&pgm->status_mutex);
-		i = 0;
-		while (i < pgm->total_coders)
+		i = -1;
+		while (i++ < pgm->total_coders)
 		{
 			if (ft_check_death(pgm, i))
 				return (NULL);
-			i++;
 		}
 		if (ft_all_coders_finished(pgm))
 		{
 			pthread_mutex_lock(&pgm->status_mutex);
 			pgm->simulation_end = 1;
-			pthread_mutex_unlock(&pgm->status_mutex);
-			break ;
+			return (pthread_mutex_unlock(&pgm->status_mutex), NULL);
 		}
 		ft_usleep(1);
 	}
