@@ -27,6 +27,7 @@ typedef struct s_dongle		t_dongle;
 typedef struct s_dongle
 {
 	pthread_mutex_t	mutex;
+	long long		available_at;
 }	t_dongle;
 
 typedef struct s_program
