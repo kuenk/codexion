@@ -15,7 +15,17 @@
 static int	ft_check_death(t_program *pgm, int i)
 {
 	pthread_mutex_lock(&pgm->status_mutex);
-	if ((long long)(ft_get_time() - pgm->coders[i].last_compile_start)
+	if (pgm->coders[i].compile_count >= pgm->num_compiles)
+	{
+		pthread_mutex_unlock(&pgm->status_mutex);
+		return (0);
+	}
+	if (pgm->coders[i].is_compiling)
+	{
+		pthread_mutex_unlock(&pgm->status_mutex);
+		return (0);
+	}
+	if ((ft_get_time() - pgm->coders[i].last_compile_start)
 		> pgm->time_to_burnout)
 	{
 		pthread_mutex_lock(&pgm->write_mutex);
@@ -35,8 +45,6 @@ static int	ft_all_coders_finished(t_program *pgm)
 {
 	int	i;
 
-	if (pgm->num_compiles == -1)
-		return (0);
 	i = 0;
 	while (i < pgm->total_coders)
 	{

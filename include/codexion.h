@@ -19,6 +19,7 @@
 # include <sys/time.h>
 # include <unistd.h>
 # include <string.h>
+# include <limits.h>
 
 typedef struct s_program	t_program;
 typedef struct s_coder		t_coder;
@@ -26,7 +27,6 @@ typedef struct s_dongle		t_dongle;
 
 typedef struct s_dongle
 {
-	pthread_mutex_t	mutex;
 	long long		available_at;
 }	t_dongle;
 
@@ -54,6 +54,9 @@ typedef struct s_coder
 	pthread_t	thread_id;
 	int			compile_count;
 	long long	last_compile_start;
+	long long	request_time;
+	int			is_waiting;
+	int			is_compiling;
 	t_dongle	*left_dongle;
 	t_dongle	*right_dongle;
 	t_program	*global;
@@ -69,6 +72,5 @@ int			ft_compile(t_coder *coder);
 long long	ft_get_time(void);
 void		ft_usleep(size_t milliseconds);
 void		ft_print(t_coder *coder, char *msg);
-int			ft_is_urgent(t_coder *coder);
 
 #endif

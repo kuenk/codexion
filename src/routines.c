@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../include/codexion.h"
+
 static int	ft_check_end(t_program *pgm)
 {
 	int	end;
@@ -21,45 +22,124 @@ static int	ft_check_end(t_program *pgm)
 	return (end);
 }
 
-static void ft_wait_for_dongle(t_coder *coder, t_dongle *d)
+static t_coder	*ft_left_neighbor(t_coder *c)
 {
-    while (1)
-    {
-        if (ft_check_end(coder->global)) return;
-        
-        pthread_mutex_lock(&d->mutex);
-        
-        long long now = ft_get_time();
-        long long deadline = coder->last_compile_start + coder->global->time_to_burnout;
-        
-        if ((now >= d->available_at) || (deadline - now < 100))
-        {
-            break;
-        }
-        
-        pthread_mutex_unlock(&d->mutex);
-        ft_usleep(1);
-    }
+	t_program	*pgm;
+	int			n;
+	int			idx;
+
+	pgm = c->global;
+	n = pgm->total_coders;
+	idx = c->id - 1;
+	return (&pgm->coders[(idx - 1 + n) % n]);
 }
 
-int ft_is_urgent(t_coder *coder)
+static t_coder	*ft_right_neighbor(t_coder *c)
 {
-    int i = 0;
-    long long now = ft_get_time();
-    long long my_deadline = coder->last_compile_start + coder->global->time_to_burnout;
-    
-    // CORRECCIÓN CRÍTICA: Si me quedan menos de 100ms para morir, 
-    // soy urgente obligatoriamente.
-    if ((my_deadline - now) < 100)
-        return (1);
+	t_program	*pgm;
+	int			n;
+	int			idx;
 
-    // Si no estoy en peligro, miro si alguien más tiene un deadline menor
-    while (i < coder->global->total_coders)
-    {
-        // ... (tu lógica original comparando con los demás) ...
-        i++;
-    }
-    return (1); // Por defecto, si no hay nadie más urgente, yo soy urgente
+	pgm = c->global;
+	n = pgm->total_coders;
+	idx = c->id - 1;
+	return (&pgm->coders[(idx + 1) % n]);
+}
+
+static long long	ft_priority_key(t_program *pgm, t_coder *c)
+{
+	if (pgm->scheduler == 0)
+		return (c->request_time);
+	return (c->last_compile_start + pgm->time_to_burnout);
+}
+
+static int	ft_loses_to(t_program *pgm, t_coder *me, t_coder *rival)
+{
+	if (!rival->is_waiting)
+		return (0);
+	return (ft_priority_key(pgm, rival) < ft_priority_key(pgm, me));
+}
+
+static int	ft_can_take_dongles(t_coder *coder)
+{
+	t_program	*pgm;
+	long long	now;
+
+	pgm = coder->global;
+	now = ft_get_time();
+	if (now < coder->left_dongle->available_at)
+		return (0);
+	if (now < coder->right_dongle->available_at)
+		return (0);
+	if (coder->left_dongle != coder->right_dongle)
+	{
+		if (ft_loses_to(pgm, coder, ft_left_neighbor(coder)))
+			return (0);
+		if (ft_loses_to(pgm, coder, ft_right_neighbor(coder)))
+			return (0);
+	}
+	return (1);
+}
+
+static int	ft_acquire_dongles(t_coder *coder)
+{
+	t_program	*pgm;
+	int			single;
+
+	pgm = coder->global;
+	pthread_mutex_lock(&pgm->status_mutex);
+	if (pgm->simulation_end)
+	{
+		pthread_mutex_unlock(&pgm->status_mutex);
+		return (0);
+	}
+	coder->is_waiting = 1;
+	coder->request_time = ft_get_time();
+	while (!pgm->simulation_end && !ft_can_take_dongles(coder))
+	{
+		pthread_mutex_unlock(&pgm->status_mutex);
+		ft_usleep(1);
+		pthread_mutex_lock(&pgm->status_mutex);
+	}
+	if (pgm->simulation_end)
+	{
+		coder->is_waiting = 0;
+		pthread_mutex_unlock(&pgm->status_mutex);
+		return (0);
+	}
+	coder->left_dongle->available_at = LLONG_MAX;
+	coder->right_dongle->available_at = LLONG_MAX;
+	coder->last_compile_start = ft_get_time();
+	coder->is_waiting = 0;
+	coder->is_compiling = 1;
+	single = (coder->left_dongle == coder->right_dongle);
+	pthread_mutex_unlock(&pgm->status_mutex);
+	ft_print(coder, "has taken a dongle");
+	if (!single)
+		ft_print(coder, "has taken a dongle");
+	return (1);
+}
+
+int	ft_compile(t_coder *coder)
+{
+	t_program	*pgm;
+	long long	end_cooldown;
+
+	pgm = coder->global;
+	if (ft_check_end(pgm))
+		return (0);
+	if (!ft_acquire_dongles(coder))
+		return (0);
+	ft_print(coder, "is compiling");
+	ft_usleep(pgm->time_to_compile);
+	pthread_mutex_lock(&pgm->status_mutex);
+	end_cooldown = ft_get_time() + pgm->cooldown;
+	coder->left_dongle->available_at = end_cooldown;
+	coder->right_dongle->available_at = end_cooldown;
+	coder->compile_count++;
+	coder->is_compiling = 0;
+	pthread_mutex_unlock(&pgm->status_mutex);
+	return (1);
 }
 
 void	ft_debug(t_coder *coder)
@@ -85,64 +165,12 @@ void	*ft_coder_routine(void *arg)
 
 	coder = (t_coder *)arg;
 	pgm = coder->global;
-	if (pgm->total_coders == 1)
-	{
-		pthread_mutex_lock(&coder->left_dongle->mutex);
-		ft_usleep(pgm->time_to_burnout);
-		pthread_mutex_unlock(&coder->left_dongle->mutex);
-		return (NULL);
-	}
-	if (coder->id % 2 == 0)
-		ft_usleep(2);
-	while (!ft_check_end(pgm)
-		&& (pgm->num_compiles == -1
-			|| coder->compile_count < pgm->num_compiles))
+	while (!ft_check_end(pgm) && coder->compile_count < pgm->num_compiles)
 	{
 		if (!ft_compile(coder))
 			break ;
 		ft_debug(coder);
 		ft_refactor(coder);
-		if (pgm->scheduler == 0)
-			ft_usleep(2);
 	}
 	return (NULL);
-}
-
-int ft_compile(t_coder *coder)
-{
-    t_dongle *first;
-    t_dongle *second;
-    t_dongle *tmp;
-
-    if (ft_check_end(coder->global)) return (0);
-
-    first = coder->left_dongle;
-    second = coder->right_dongle;
-    if (coder->id % 2 == 0) // Asimetría
-    {
-        tmp = first;
-        first = second;
-        second = tmp;
-    }
-
-    // Adquisición segura usando la función de espera
-    ft_wait_for_dongle(coder, first);
-    ft_print(coder, "has taken a dongle");
-    
-    ft_wait_for_dongle(coder, second);
-    ft_print(coder, "has taken the other dongle");
-
-    // Compilación
-    pthread_mutex_lock(&coder->global->status_mutex);
-    coder->last_compile_start = ft_get_time();
-    pthread_mutex_unlock(&coder->global->status_mutex);
-    ft_print(coder, "is compiling");
-    ft_usleep(coder->global->time_to_compile);
-    long long end_cooldown = ft_get_time() + coder->global->cooldown;
-    first->available_at = end_cooldown;
-    second->available_at = end_cooldown;
-    coder->compile_count++;
-    pthread_mutex_unlock(&second->mutex);
-    pthread_mutex_unlock(&first->mutex);
-    return (1);
 }

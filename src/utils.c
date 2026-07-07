@@ -49,14 +49,6 @@ void	ft_usleep(size_t milliseconds)
 
 void	ft_clean_all(t_program *pgm)
 {
-	int	i;
-
-	i = 0;
-	while (i < pgm->total_coders)
-	{
-		pthread_mutex_destroy(&pgm->dongles[i].mutex);
-		i++;
-	}
 	pthread_mutex_destroy(&pgm->write_mutex);
 	pthread_mutex_destroy(&pgm->status_mutex);
 	if (pgm->coders)

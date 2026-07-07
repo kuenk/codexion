@@ -19,11 +19,7 @@ int	ft_init_dongles(t_program *pgm)
 	i = 0;
 	while (i < pgm->total_coders)
 	{
-		if (pthread_mutex_init(&pgm->dongles[i].mutex, NULL) != 0)
-		{
-			printf("Error: Failed to initialize mutex for dongle %d.\n", i);
-			return (1);
-		}
+		pgm->dongles[i].available_at = 0;
 		i++;
 	}
 	return (0);
@@ -39,6 +35,9 @@ int	ft_init_coders(t_program *pgm)
 		pgm->coders[i].id = i + 1;
 		pgm->coders[i].compile_count = 0;
 		pgm->coders[i].last_compile_start = 0;
+		pgm->coders[i].request_time = 0;
+		pgm->coders[i].is_waiting = 0;
+		pgm->coders[i].is_compiling = 0;
 		pgm->coders[i].global = pgm;
 		pgm->coders[i].left_dongle = &pgm->dongles[i];
 		pgm->coders[i].right_dongle = &pgm->dongles[(i + 1)
