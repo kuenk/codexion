@@ -30,7 +30,7 @@ int	ft_mem_alloc(t_program *pgm)
 	return (0);
 }
 
-size_t	ft_get_time(void)
+long long	ft_get_time(void)
 {
 	struct timeval	tv;
 
