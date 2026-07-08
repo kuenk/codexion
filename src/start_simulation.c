@@ -55,21 +55,21 @@ static int	ft_all_coders_finished(t_program *pgm)
 	return (1);
 }
 
+static void	ft_mark_end(t_program *pgm)
+{
+	pthread_mutex_lock(&pgm->status_mutex);
+	pgm->simulation_end = 1;
+	pthread_mutex_unlock(&pgm->status_mutex);
+}
+
 void	*ft_supervisor(void *arg)
 {
 	t_program	*pgm;
 	int			i;
 
 	pgm = (t_program *)arg;
-	while (1)
+	while (!ft_check_end(pgm))
 	{
-		pthread_mutex_lock(&pgm->status_mutex);
-		if (pgm->simulation_end)
-		{
-			pthread_mutex_unlock(&pgm->status_mutex);
-			break ;
-		}
-		pthread_mutex_unlock(&pgm->status_mutex);
 		i = 0;
 		while (i < pgm->total_coders)
 		{
@@ -79,9 +79,7 @@ void	*ft_supervisor(void *arg)
 		}
 		if (ft_all_coders_finished(pgm))
 		{
-			pthread_mutex_lock(&pgm->status_mutex);
-			pgm->simulation_end = 1;
-			pthread_mutex_unlock(&pgm->status_mutex);
+			ft_mark_end(pgm);
 			break ;
 		}
 		ft_usleep(1);

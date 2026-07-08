@@ -12,16 +12,6 @@
 
 #include "../include/codexion.h"
 
-static int	ft_check_argc(int argc)
-{
-	if (!(argc == 9))
-	{
-		printf("Error: Expected 8 arguments\n");
-		return (1);
-	}
-	return (0);
-}
-
 static int	ft_parse_uint(const char *str, long long *out)
 {
 	long long	val;
@@ -83,13 +73,11 @@ static int	ft_check_scheduler(char *str, int i)
 	return (0);
 }
 
-int	ft_parsing(int argc, char **argv, t_program *program)
+static int	ft_check_all_args(int argc, char **argv)
 {
 	int			i;
 	long long	dummy;
 
-	if (ft_check_argc(argc))
-		return (1);
 	i = 1;
 	while (i < argc)
 	{
@@ -102,13 +90,22 @@ int	ft_parsing(int argc, char **argv, t_program *program)
 				return (1);
 			}
 		}
-		else
-		{
-			if (ft_check_scheduler(argv[i], i))
-				return (1);
-		}
+		else if (ft_check_scheduler(argv[i], i))
+			return (1);
 		i++;
 	}
+	return (0);
+}
+
+int	ft_parsing(int argc, char **argv, t_program *program)
+{
+	if (argc != 9)
+	{
+		printf("Error: Expected 8 arguments\n");
+		return (1);
+	}
+	if (ft_check_all_args(argc, argv))
+		return (1);
 	if (ft_validate_and_save(program, argv))
 		return (1);
 	return (0);

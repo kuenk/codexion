@@ -12,7 +12,7 @@
 
 #include "../include/codexion.h"
 
-static int	ft_check_end(t_program *pgm)
+int	ft_check_end(t_program *pgm)
 {
 	int	end;
 

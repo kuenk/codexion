@@ -72,5 +72,5 @@ int			ft_compile(t_coder *coder);
 long long	ft_get_time(void);
 void		ft_usleep(size_t milliseconds);
 void		ft_print(t_coder *coder, char *msg);
-
+int			ft_check_end(t_program *pgm);
 #endif
