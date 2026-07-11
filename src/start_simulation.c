@@ -44,22 +44,15 @@ static int	ft_check_death(t_program *pgm, int i)
 static int	ft_all_coders_finished(t_program *pgm)
 {
 	int	i;
-	int	done;
 
-	pthread_mutex_lock(&pgm->status_mutex);
 	i = 0;
-	done = 1;
 	while (i < pgm->total_coders)
 	{
 		if (pgm->coders[i].compile_count < pgm->num_compiles)
-		{
-			done = 0;
-			break ;
-		}
+			return (0);
 		i++;
 	}
-	pthread_mutex_unlock(&pgm->status_mutex);
-	return (done);
+	return (1);
 }
 
 static void	ft_mark_end(t_program *pgm)

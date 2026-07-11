@@ -73,6 +73,4 @@ long long	ft_get_time(void);
 void		ft_usleep(size_t milliseconds);
 void		ft_print(t_coder *coder, char *msg);
 int			ft_check_end(t_program *pgm);
-int			ft_can_take_dongles(t_coder *coder);
-
 #endif
