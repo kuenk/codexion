@@ -17,7 +17,9 @@ SRC =	main.c \
 		utils.c \
 		parsing.c \
 		routines.c \
-		start_simulation.c
+		start_simulation.c \
+		dongle_priority.c \
+		acquire.c
 
 # Archivos objeto
 OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:.c=.o))
