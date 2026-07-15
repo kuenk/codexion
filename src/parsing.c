@@ -41,11 +41,6 @@ static int	ft_validate_and_save(t_program *pgm, char **argv)
 	long long	v;
 
 	ft_parse_uint(argv[1], &v);
-	if (v < 2 || v >= 200)
-	{
-		printf("Need between 2 and 200 coders.\n");
-		return (1);
-	}
 	pgm->total_coders = (int)v;
 	ft_parse_uint(argv[2], &pgm->time_to_burnout);
 	ft_parse_uint(argv[3], &pgm->time_to_compile);

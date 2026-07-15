@@ -6,7 +6,7 @@
 /*   By: dcuenca <dcuenca@student.42madrid.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 10:58:25 by dcuenca           #+#    #+#             */
-/*   Updated: 2026/07/08 10:58:29 by dcuenca          ###   ########.fr       */
+/*   Updated: 2026/07/15 12:42:06 by dcuenca          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,13 @@ static void	ft_wait_turn(t_coder *coder)
 
 static void	ft_grant_dongles(t_coder *coder)
 {
-	int	single;
-
-	single = (coder->left_dongle == coder->right_dongle);
 	coder->left_dongle->available_at = LLONG_MAX;
 	coder->right_dongle->available_at = LLONG_MAX;
 	coder->last_compile_start = ft_get_time();
 	coder->is_compiling = 1;
 	pthread_mutex_unlock(&coder->global->status_mutex);
 	ft_print(coder, "has taken a dongle");
-	if (!single)
-		ft_print(coder, "has taken a dongle");
+	ft_print(coder, "has taken the other dongle");
 }
 
 static int	ft_acquire_dongles(t_coder *coder)

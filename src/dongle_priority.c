@@ -6,7 +6,7 @@
 /*   By: dcuenca <dcuenca@student.42madrid.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 10:57:50 by dcuenca           #+#    #+#             */
-/*   Updated: 2026/07/08 10:58:33 by dcuenca          ###   ########.fr       */
+/*   Updated: 2026/07/15 12:39:37 by dcuenca          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,17 +56,17 @@ int	ft_can_take_dongles(t_coder *coder)
 	long long	now;
 
 	pgm = coder->global;
+	if (coder->left_dongle == coder->right_dongle)
+		return(0);
 	now = ft_get_time();
 	if (now < coder->left_dongle->available_at)
 		return (0);
 	if (now < coder->right_dongle->available_at)
 		return (0);
-	if (coder->left_dongle != coder->right_dongle)
-	{
-		if (ft_loses_to(pgm, coder, ft_left_neighbor(coder)))
-			return (0);
-		if (ft_loses_to(pgm, coder, ft_right_neighbor(coder)))
-			return (0);
-	}
+	if (ft_loses_to(pgm, coder, ft_left_neighbor(coder)))
+		return (0);
+	if (ft_loses_to(pgm, coder, ft_right_neighbor(coder)))
+		return (0);
+
 	return (1);
 }
